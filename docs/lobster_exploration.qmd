@@ -1,0 +1,77 @@
+---
+title: "lobster_exploration"
+format: html
+editor: visual
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(janitor)
+
+lobsters <- read_csv(here("data","Lobster_Abundance_All_Years_20210412.csv"), na = c("-99999", "")) %>% 
+  clean_names() %>% 
+  uncount(count)
+```
+
+```{r}
+lobster <- lobsters |> 
+  group_by(site, year) |> 
+  summarise(total_counts = n(), mean_length = mean(size_mm))
+
+ggplot(lobster, aes(x = year, y = total_counts)) + geom_point() + facet_wrap(~site)
+```
+
+```{r}
+lobster_legal <- lobsters |> 
+  filter(year == 2020) |>
+  mutate(legal = ifelse(size_mm < 79.76, "no", "yes")) |> 
+  group_by(site, legal) |> 
+  summarise(counts = n()) 
+  
+  
+  
+```
+
+```{r}
+
+  ggplot(lobster_legal, aes(x= site, y = counts, fill = legal)) + geom_col(position = "fill")
+```
+
+filter() practice
+
+```{r}
+filtered<- lobsters |> 
+  filter(site %in% c("IVEE", "CARP", "NAPL"))
+
+filtered_august <- lobsters |> 
+  filter(month == 8)
+
+filtered_aque <- lobsters |> 
+  filter(site == "AQUE" | size_mm > 70)
+
+filtered_no_naples <- lobsters |> 
+  filter(site != "NAPL")
+```
+
+group_by() summarise() practice
+
+```{r}
+mean_sd <- lobsters |> 
+  group_by(site) |> 
+  summarise(mean_length = mean(size_mm, na.rm = TRUE), sd_length = sd(size_mm, na.rm = TRUE))
+
+length_month <- lobsters |> 
+  group_by(site, month) |> 
+  summarise(max_length = max(size_mm, na.rm = TRUE))
+
+```
+
+mutate() practice
+
+```{r}
+conversions <- lobsters |> 
+  mutate(size_cm = size_mm / 10) |> 
+  mutate(site = tolower(site)) |> 
+  mutate(area = as.character(area))
+```
